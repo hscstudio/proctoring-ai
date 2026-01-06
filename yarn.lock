@@ -919,6 +919,11 @@
     "@types/babel__core" "^7.20.5"
     react-refresh "^0.18.0"
 
+"@vladmandic/face-api@^1.7.15":
+  version "1.7.15"
+  resolved "https://registry.yarnpkg.com/@vladmandic/face-api/-/face-api-1.7.15.tgz#10cddf5c405f6f52f37605c9ee28c91ac6a23ead"
+  integrity sha512-WDMmK3CfNLo8jylWqMoQgf4nIst3M0fzx1dnac96wv/dvMTN4DxC/Pq1DGtduDk1lktCamQ3MIDXFnvrdHTXDw==
+
 "@webgpu/types@0.1.38":
   version "0.1.38"
   resolved "https://registry.yarnpkg.com/@webgpu/types/-/types-0.1.38.tgz#6fda4b410edc753d3213c648320ebcf319669020"
