@@ -1,12 +1,13 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as faceapi from 'face-api.js';
 import Webcam from 'react-webcam';
-import { QRCodeSVG } from 'qrcode.react'; // Pastikan sudah install qrcode.react
+import { QRCodeSVG } from 'qrcode.react';
 import { 
   ShieldCheck, LogOut, ScanFace, RefreshCw, AlertCircle, 
-  CheckCircle2, UserCircle, Camera, Smartphone, ChevronRight 
+  CheckCircle2, UserCircle, Smartphone, Camera
 } from 'lucide-react';
 
+// Menggunakan BASE_URL agar dinamis baik di dev maupun GitHub Pages
 const MODEL_URL = import.meta.env.BASE_URL + 'models';
 
 const FaceVerification = ({ onVerified, onLogout }) => {
@@ -20,24 +21,26 @@ const FaceVerification = ({ onVerified, onLogout }) => {
   const [status, setStatus] = useState('Memulai Sistem AI...');
   const [isModelsLoaded, setIsModelsLoaded] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
-  
-  // State baru untuk kunci koneksi HP
   const [hasScannedQR, setHasScannedQR] = useState(false);
 
+  // Fitur Switch Camera
+  const [facingMode, setFacingMode] = useState("user");
+
+  const toggleCamera = () => {
+    setFacingMode(prev => (prev === "user" ? "environment" : "user"));
+  };
+
   const generateQRLink = () => {
-    // window.location.origin = https://hscstudio.github.io
-    // window.location.pathname = /proctoring-ai/
     const fullPath = window.location.origin + window.location.pathname;
+    // Gunakan HashRouter format (#/)
     return `${fullPath}#/rear-proctoring?userId=${user?.id || 'peserta'}`;
   };
 
-  // Generate link dinamis untuk QR Code (Mendukung HashRouter GitHub Pages)
-  const qrLink = generateQRLink(); //`${window.location.origin}${window.location.pathname}#/rear-proctoring?userId=${user?.id || 'user'}`;
+  const qrLink = generateQRLink();
 
   useEffect(() => {
     const loadModels = async () => {
       try {
-        // const MODEL_URL = window.location.origin + '/models';
         await Promise.all([
           faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
           faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
@@ -47,7 +50,7 @@ const FaceVerification = ({ onVerified, onLogout }) => {
         setStatus('Sistem Siap. Silakan hubungkan kamera sekunder.');
       } catch (err) {
         setStatus('Gagal memuat model AI.');
-        console.log(err);
+        console.error("AI Model Load Error:", err);
       }
     };
     loadModels();
@@ -72,7 +75,9 @@ const FaceVerification = ({ onVerified, onLogout }) => {
       }
 
       const distance = faceapi.euclideanDistance(refDetection.descriptor, webDetection.descriptor);
-      if (distance < 0.6) {
+      
+      // Threshold 0.6 adalah standar face-api (semakin kecil semakin ketat)
+      if (distance < 0.55) {
         setStatus('Verifikasi Berhasil!');
         setTimeout(() => onVerified(), 1500);
       } else {
@@ -105,7 +110,7 @@ const FaceVerification = ({ onVerified, onLogout }) => {
 
       <div className="flex-1 flex flex-col lg:flex-row items-center justify-center p-6 gap-8 max-w-6xl mx-auto w-full">
         
-        {/* PANEL KIRI: QR CODE & INSTRUKSI */}
+        {/* PANEL KIRI: QR CODE */}
         <div className="w-full lg:w-1/3 space-y-6">
           <div className={`bg-white p-8 rounded-[2.5rem] shadow-xl border-2 transition-all ${hasScannedQR ? 'border-emerald-500 shadow-emerald-100' : 'border-slate-100'}`}>
             <div className="text-center mb-6">
@@ -142,8 +147,24 @@ const FaceVerification = ({ onVerified, onLogout }) => {
         {/* PANEL KANAN: WEBCAM UTAMA */}
         <div className="w-full lg:w-2/3 space-y-6 flex flex-col items-center">
           <div className="w-full relative group aspect-video rounded-[3rem] overflow-hidden bg-slate-900 shadow-2xl border-8 border-white ring-1 ring-slate-200">
-            <Webcam ref={webcamRef} mirrored={true} className="w-full h-full object-cover" />
+            <Webcam 
+              ref={webcamRef} 
+              mirrored={facingMode === "user"} 
+              videoConstraints={{ facingMode: facingMode }}
+              className="w-full h-full object-cover" 
+            />
             
+            {/* BUTTON SWITCH CAMERA (Laptop/PC) */}
+            {hasScannedQR && !isVerifying && (
+              <button 
+                onClick={toggleCamera}
+                className="absolute top-6 right-6 z-40 bg-black/50 hover:bg-black/70 backdrop-blur-md p-3 rounded-2xl border border-white/20 text-white transition-all active:scale-90"
+                title="Ganti Kamera"
+              >
+                <RefreshCw size={20} />
+              </button>
+            )}
+
             {/* Animasi Scan jika sedang memproses */}
             {isVerifying && (
               <div className="absolute inset-0 z-20 pointer-events-none">
@@ -159,7 +180,7 @@ const FaceVerification = ({ onVerified, onLogout }) => {
                    <AlertCircle size={40} className="text-indigo-400" />
                 </div>
                 <h4 className="text-xl font-black mb-2">Akses Terkunci</h4>
-                <p className="text-sm opacity-70 font-medium">Scan QR Code di samping dan aktifkan kamera HP untuk membuka kunci verifikasi wajah.</p>
+                <p className="text-sm opacity-70 font-medium leading-relaxed">Scan QR Code di samping dan aktifkan kamera HP untuk membuka kunci verifikasi wajah.</p>
               </div>
             )}
           </div>
@@ -169,7 +190,7 @@ const FaceVerification = ({ onVerified, onLogout }) => {
             <div className={`inline-flex items-center gap-2 font-bold py-3 px-6 rounded-2xl border transition-all ${
               status.includes('Berhasil') ? 'bg-green-50 text-green-700 border-green-100' : 'bg-white text-slate-700 border-slate-200 shadow-sm'
             }`}>
-              {isVerifying ? <RefreshCw className="animate-spin text-indigo-600" size={18} /> : <div className="w-2 h-2 rounded-full bg-indigo-500"></div>}
+              {isVerifying ? <RefreshCw className="animate-spin text-indigo-600" size={18} /> : <Camera size={18} className="text-indigo-500" />}
               <span className="text-sm">{status}</span>
             </div>
 
@@ -183,7 +204,7 @@ const FaceVerification = ({ onVerified, onLogout }) => {
               }`}
             >
               <ScanFace size={28} />
-              {isVerifying ? 'Verifikasi...' : 'Mulai Verifikasi'}
+              {isVerifying ? 'Sedang Memproses...' : 'Mulai Verifikasi'}
             </button>
           </div>
         </div>
