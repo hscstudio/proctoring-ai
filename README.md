@@ -14,3 +14,23 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+For Development (with hot-reload):
+bash
+docker-compose up proctoring-ai-dev
+Then access your app at http://localhost:5173
+
+When you edit files on your local machine, the changes will automatically be reflected in the Docker container thanks to the volume bindings! ✨
+
+For Production:
+bash
+docker-compose up proctoring-ai-prod
+Then access your app at http://localhost:8080
+
+To rebuild the containers:
+bash
+docker-compose up --build proctoring-ai-dev
+To stop:
+bash
+docker-compose down
+The volume bindings ensure that when you edit files in ./src, ./public, or any of the configuration files locally, the changes are immediately synced to the Docker container and Vite's hot-reload will pick them up automatically! 🔥
