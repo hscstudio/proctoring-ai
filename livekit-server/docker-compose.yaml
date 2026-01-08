@@ -1,0 +1,22 @@
+services:
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: livekit-server
+    restart: always
+    command: --config /livekit.yaml
+    volumes:
+      - ./livekit.yaml:/livekit.yaml
+    ports:
+      # Port untuk API & HTTP
+      - "7880:7880"
+      # Port untuk WebRTC (TCP)
+      - "7881:7881"
+      # Port untuk WebRTC (UDP) - SANGAT PENTING untuk Video
+      - "7882:7882/udp"
+    environment:
+      - LIVEKIT_CONFIG_FILE=/livekit.yaml
+
+  # Opsional: LiveKit Egress (jika ingin merekam ujian ke file MP4/S3)
+  # egress:
+  #   image: livekit/egress:latest
+  #   ...

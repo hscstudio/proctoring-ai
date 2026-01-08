@@ -1,0 +1,10 @@
+port: 7880
+bind_addresses:
+  - ""
+keys:
+  # Pasangan API Key dan Secret untuk backend kamu
+  devkey: "secret"
+rtc:
+  use_external_ip: false
+  tcp_port: 7881
+  udp_port: 7882
