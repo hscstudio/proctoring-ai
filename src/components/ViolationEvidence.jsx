@@ -95,10 +95,29 @@ const ViolationEvidence = ({ evidence }) => {
 
                 {/* Evidence Display */}
                 {item.type === "voice" ? (
-                  <div className="bg-white p-2 rounded-lg border border-red-200">
-                    <p className="text-[10px] text-red-700 italic font-semibold">
-                      "{item.evidence}"
-                    </p>
+                  <div className="space-y-2">
+                    {/* Transcript */}
+                    <div className="bg-white p-2 rounded-lg border border-red-200">
+                      <p className="text-[10px] text-red-700 italic font-semibold">
+                        "{typeof item.evidence === 'string' ? item.evidence : item.evidence?.transcript || 'Terdeteksi berbicara'}"
+                      </p>
+                    </div>
+                    
+                    {/* Audio Player */}
+                    {item.evidence?.audioUrl && (
+                      <audio 
+                        controls 
+                        src={item.evidence.audioUrl}
+                        className="w-full h-8 rounded-lg"
+                        style={{
+                          accentColor: '#ef4444',
+                          backgroundColor: '#fff',
+                          borderRadius: '0.5rem',
+                        }}
+                      >
+                        Browser Anda tidak mendukung audio player.
+                      </audio>
+                    )}
                   </div>
                 ) : item.evidence ? (
                   <img

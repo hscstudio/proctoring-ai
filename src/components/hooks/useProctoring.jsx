@@ -30,7 +30,7 @@ const useProctoring = (webcamRef, isAiReady, currentStep, onAutoSubmit) => {
     isQuiet: true,
   });
 
-  const { isQuiet, recognizedText, lastSpeechTimestamp } = useAudioDetection();
+  const { isQuiet, recognizedText, lastSpeechTimestamp, audioUrl } = useAudioDetection();
 
   // Function to capture screenshot from webcam
   const captureScreenshot = () => {
@@ -99,7 +99,7 @@ const useProctoring = (webcamRef, isAiReady, currentStep, onAutoSubmit) => {
                 addEvidence(
                   "voice",
                   description || `Terdeteksi berbicara: "${recognizedText}"`,
-                  recognizedText
+                  { transcript: recognizedText, audioUrl: audioUrl }
                 );
               } else {
                 addEvidence(type, description);
@@ -192,6 +192,7 @@ const useProctoring = (webcamRef, isAiReady, currentStep, onAutoSubmit) => {
     webcamRef,
     isQuiet,
     recognizedText,
+    audioUrl,
     onAutoSubmit,
   ]);
 
