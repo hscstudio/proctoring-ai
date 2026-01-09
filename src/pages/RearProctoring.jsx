@@ -38,9 +38,14 @@ const RearProctoring = () => {
   const objectDetectorRef = useRef(null);
   const lastVideoTimeRef = useRef(-1);
   const lastProcessTimeRef = useRef(-1);
+  const lastDetectionTimeRef = useRef(0); // Track last detection time for FPS throttling
   const animationFrameRef = useRef(null);
   const dropdownRef = useRef(null);
   const searchInputRef = useRef(null);
+
+  // Target FPS for detection (optimized for battery/performance)
+  const TARGET_FPS = 15;
+  const FRAME_INTERVAL = 1000 / TARGET_FPS; // ~66.67ms between detections
 
   const [isLoaded, setIsLoaded] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -180,15 +185,16 @@ const RearProctoring = () => {
       const canvas = canvasRef.current;
       
       if (video?.readyState === 4 && canvas) {
-        const startTimeMs = performance.now();
+        const currentTime = performance.now();
+        const timeSinceLastDetection = currentTime - lastDetectionTimeRef.current;
         
-        // Only detect if video time changed
-        if (video.currentTime !== lastVideoTimeRef.current) {
-          lastVideoTimeRef.current = video.currentTime;
+        // Throttle to TARGET_FPS (15 FPS) - only detect when enough time has passed
+        if (timeSinceLastDetection >= FRAME_INTERVAL) {
+          lastDetectionTimeRef.current = currentTime;
           
           try {
             // MediaPipe Detection
-            const detections = objectDetectorRef.current.detectForVideo(video, startTimeMs);
+            const detections = objectDetectorRef.current.detectForVideo(video, currentTime);
             
             // Analyze frame
             const analysis = analyzeFrame(detections.detections);
@@ -203,13 +209,13 @@ const RearProctoring = () => {
             
             // Update stats
             const endTimeMs = performance.now();
-            setLatency(endTimeMs - startTimeMs);
+            setLatency(endTimeMs - currentTime);
             
             if (lastProcessTimeRef.current !== -1) {
-              const delta = performance.now() - lastProcessTimeRef.current;
+              const delta = currentTime - lastProcessTimeRef.current;
               setFps(1000 / delta);
             }
-            lastProcessTimeRef.current = performance.now();
+            lastProcessTimeRef.current = currentTime;
 
             // Publish Video if connected
             if (isConnected && roomRef.current) {
