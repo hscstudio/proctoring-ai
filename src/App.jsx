@@ -5,6 +5,8 @@ import Login from './pages/Login';
 import FaceVerification from './pages/FaceVerification';
 import Exam from './pages/Exam';
 import RearProctoring from './pages/RearProctoring';
+import ExamViewer from './pages/ExamViewer';
+import AdminProctoring from './pages/AdminProctoring';
 
 // 1. Definisikan komponen Dashboard Utama di luar fungsi App
 const MainDashboard = ({ user, screen, setScreen, handleLoginSuccess, handleLogout }) => {
@@ -82,6 +84,12 @@ function App() {
 
         {/* Rute Khusus HP (Smartphone) */}
         <Route path="/rear-proctoring" element={<RearProctoring />} />
+
+        {/* Rute Viewer (Proctor Monitoring) */}
+        <Route path="/viewer" element={<ExamViewer />} />
+
+        {/* Rute Admin Proctoring (Alternative Viewer) */}
+        <Route path="/admin-proctoring" element={<AdminProctoring />} />
 
         {/* Redirect jika rute tidak ditemukan */}
         <Route path="*" element={<Navigate to="/" />} />

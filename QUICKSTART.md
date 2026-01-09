@@ -45,6 +45,7 @@ Default credentials:
 ## 🌐 Access Points
 
 - Frontend: http://localhost:5173
+- **Exam Viewer (Proctor)**: http://localhost:5173/#/viewer
 - Backend API: http://localhost:5050
 - LiveKit Server: ws://localhost:7880
 
