@@ -2,11 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Webcam from 'react-webcam';
 import NoSleep from 'nosleep.js';
-<<<<<<< Updated upstream
-import * as tf from '@tensorflow/tfjs';
-import * as cocoSsd from '@tensorflow-models/coco-ssd';
-import { ShieldCheck, AlertCircle, Users, Zap, Loader2, RefreshCw, Smartphone } from 'lucide-react';
-=======
 import { Room, VideoPresets, RoomEvent } from 'livekit-client';
 import { 
   ShieldCheck, AlertCircle, Users, Zap, Loader2, 
@@ -16,7 +11,6 @@ import {
 // KONFIGURASI: 127.0.0.1 lebih stabil untuk Docker Local
 const BACKEND_URL = 'http://127.0.0.1:5050';
 const LIVEKIT_URL = 'ws://127.0.0.1:7880';
->>>>>>> Stashed changes
 
 // COCO Labels (Standard 80 objects) - same as object-detector.html
 const COCO_LABELS = [
@@ -34,16 +28,12 @@ const COCO_LABELS = [
 
 const RearProctoring = () => {
   const [searchParams] = useSearchParams();
-  const userId = searchParams.get('userId') || 'Peserta';
+  const userId = searchParams.get('userId') || `User_${Date.now().toString().slice(-4)}`;
 
   const webcamRef = useRef(null);
-<<<<<<< Updated upstream
-  const modelRef = useRef(null);
-=======
   const canvasRef = useRef(null);
   const roomRef = useRef(null);
   const connectingRef = useRef(false);
->>>>>>> Stashed changes
   const noSleep = useRef(new NoSleep());
   const objectDetectorRef = useRef(null);
   const lastVideoTimeRef = useRef(-1);
@@ -53,21 +43,6 @@ const RearProctoring = () => {
   const searchInputRef = useRef(null);
 
   const [isLoaded, setIsLoaded] = useState(false);
-<<<<<<< Updated upstream
-  const [personCount, setPersonCount] = useState(0);
-  const [isSafe, setIsSafe] = useState(true);
-  const [noSleepEnabled, setNoSleepEnabled] = useState(false);
-  const [facingMode, setFacingMode] = useState("environment");
-
-  // 1. Inisialisasi Backend yang Benar (Cegah Crash)
-  useEffect(() => {
-    const initAI = async () => {
-      try {
-        await tf.ready();
-        // Gunakan backend 'wasm' atau 'webgl' secara otomatis
-        modelRef.current = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
-        setIsLoaded(true);
-=======
   const [isConnected, setIsConnected] = useState(false);
   const [isSafe, setIsSafe] = useState(true);
   const [noSleepEnabled, setNoSleepEnabled] = useState(false);
@@ -179,52 +154,29 @@ const RearProctoring = () => {
         setIsConnected(true);
         setIsLoaded(true);
 
->>>>>>> Stashed changes
       } catch (err) {
-        console.error("AI Load Error:", err);
+        console.error("❌ Error Inisialisasi:", err);
+        setErrorMsg(err.message);
+      } finally {
+        connectingRef.current = false;
       }
     };
-    initAI();
+
+    initSystem();
 
     return () => {
-<<<<<<< Updated upstream
-      noSleep.current.disable();
-      // Penting: Bersihkan memori AI saat HP ditutup
-      tf.disposeVariables(); 
-=======
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
->>>>>>> Stashed changes
     };
-  }, []);
+  }, [userId]);
 
-<<<<<<< Updated upstream
-  // 2. Loop Deteksi yang Lebih Irit Baterai
-  useEffect(() => {
-    if (!isLoaded) return;
-=======
   // 3. Object Detection Loop
   useEffect(() => {
     if (!isLoaded || !noSleepEnabled || !objectDetectorRef.current) return;
->>>>>>> Stashed changes
     
-    const detect = async () => {
+    const detectAndStream = async () => {
       const video = webcamRef.current?.video;
-<<<<<<< Updated upstream
-      if (video?.readyState === 4) {
-        const predictions = await modelRef.current.detect(video);
-        const persons = predictions.filter(p => p.class === 'person' && p.score > 0.4);
-        setPersonCount(persons.length);
-
-        // Logika Pelanggaran: Jika lebih dari 1 orang terdeteksi selama 2 detik
-        if (persons.length > 1) {
-          if (!multiPersonStart.current) multiPersonStart.current = Date.now();
-          if (Date.now() - multiPersonStart.current > 2000) setIsSafe(false);
-        } else {
-          multiPersonStart.current = null;
-          setIsSafe(true);
-=======
       const canvas = canvasRef.current;
       
       if (video?.readyState === 4 && canvas) {
@@ -281,19 +233,12 @@ const RearProctoring = () => {
           } catch (err) {
             console.error("Detection error:", err);
           }
->>>>>>> Stashed changes
         }
       }
       
       animationFrameRef.current = requestAnimationFrame(detectAndStream);
     };
 
-<<<<<<< Updated upstream
-    // Gunakan interval yang tidak terlalu rapat (800ms) agar HP tidak panas
-    const interval = setInterval(detect, 800);
-    return () => clearInterval(interval);
-  }, [isLoaded]);
-=======
     detectAndStream();
     
     return () => {
@@ -395,15 +340,12 @@ const RearProctoring = () => {
       );
     });
   };
->>>>>>> Stashed changes
 
-  const enableNoSleep = () => {
+  const handleStart = () => {
     noSleep.current.enable();
     setNoSleepEnabled(true);
   };
 
-<<<<<<< Updated upstream
-=======
   // Add rule handler
   const handleAddRule = () => {
     const label = selectedObject.toLowerCase().trim();
@@ -447,82 +389,33 @@ const RearProctoring = () => {
     </div>
   );
 
->>>>>>> Stashed changes
   return (
-    <div className={`h-screen flex flex-col transition-colors duration-700 ${isSafe ? 'bg-slate-950' : 'bg-red-900'}`}>
+    <div className={`h-screen flex flex-col transition-colors duration-700 font-sans ${isSafe ? 'bg-slate-950' : 'bg-red-900'}`}>
       
       {!isLoaded && (
         <div className="fixed inset-0 z-[60] bg-slate-950 flex flex-col items-center justify-center text-white p-10">
           <Loader2 size={40} className="animate-spin text-indigo-500 mb-4" />
-<<<<<<< Updated upstream
-          <h2 className="text-xl font-black italic tracking-tighter">BOOTING AI GUARD...</h2>
-=======
           <h2 className="text-xl font-black italic tracking-tighter uppercase">Initializing MediaPipe...</h2>
->>>>>>> Stashed changes
         </div>
       )}
 
       {!noSleepEnabled && isLoaded && (
         <div className="fixed inset-0 z-50 bg-indigo-600 flex flex-col items-center justify-center p-8 text-center text-white">
           <Smartphone size={64} className="mb-6 animate-bounce" />
-          <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-2">Sync Completed</h2>
-          <p className="text-indigo-100 text-sm mb-8 opacity-80">Letakkan HP di samping belakang Anda untuk pengawasan sudut lebar.</p>
-          <button onClick={enableNoSleep} className="bg-white text-indigo-600 font-black px-12 py-5 rounded-[2rem] shadow-2xl active:scale-95 transition-all text-lg">
-            AKTIFKAN SENSOR
+          <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-2 leading-none">Ready to Stream</h2>
+          <p className="text-indigo-100 text-xs mb-10 opacity-70 tracking-widest uppercase font-bold font-mono">Status: Connected to Node 7880</p>
+          <button onClick={handleStart} className="bg-white text-indigo-600 font-black px-12 py-5 rounded-[2.5rem] shadow-2xl active:scale-95 transition-all text-xl uppercase italic tracking-tighter">
+            Mulai Pengawasan
           </button>
         </div>
       )}
 
-<<<<<<< Updated upstream
-      {/* COMPACT HUD FOR MOBILE */}
-      <div className="p-4 flex justify-between items-center bg-black/40 backdrop-blur-md border-b border-white/5">
-=======
       {/* HUD HEADER */}
       <div className="p-4 flex justify-between items-center bg-black/40 backdrop-blur-xl border-b border-white/5">
->>>>>>> Stashed changes
         <div className="flex flex-col">
-          <span className="text-slate-500 text-[8px] uppercase font-black tracking-widest">Node ID</span>
-          <h1 className="text-white font-black text-sm italic uppercase">{userId}</h1>
+          <span className="text-slate-500 text-[9px] uppercase font-black tracking-[0.2em] leading-none mb-1">Live Participant</span>
+          <h1 className="text-white font-black text-base italic uppercase leading-none tracking-tight">{userId}</h1>
         </div>
-<<<<<<< Updated upstream
-        <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${isSafe ? 'border-emerald-500/50 text-emerald-400' : 'bg-red-500 text-white animate-pulse'}`}>
-          {isSafe ? <ShieldCheck size={12} /> : <AlertCircle size={12} />}
-          <span className="text-[10px] font-black uppercase">{isSafe ? 'Active' : 'Warning'}</span>
-        </div>
-      </div>
-
-      {/* CAMERA VIEW */}
-      <div className="flex-1 relative flex items-center justify-center p-4">
-        <div className="relative w-full aspect-[3/4] rounded-[2.5rem] overflow-hidden border-2 border-white/10 shadow-2xl bg-black">
-          <Webcam
-            ref={webcamRef}
-            audio={false}
-            videoConstraints={{ facingMode: facingMode }}
-            className="w-full h-full object-cover grayscale-[0.3]"
-          />
-          <button 
-            onClick={() => setFacingMode(p => p === "user" ? "environment" : "user")}
-            className="absolute top-4 right-4 bg-black/50 p-3 rounded-2xl text-white backdrop-blur-md"
-          >
-            <RefreshCw size={20} />
-          </button>
-        </div>
-      </div>
-
-      {/* DASHBOARD MINI */}
-      <div className="p-6 grid grid-cols-2 gap-3 bg-black/40">
-        <div className="bg-white/5 p-4 rounded-3xl border border-white/5">
-          <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Detection</p>
-          <p className={`text-xl font-black ${isSafe ? 'text-white' : 'text-red-500'}`}>{personCount} <span className="text-xs opacity-50">Pers.</span></p>
-        </div>
-        <div className="bg-white/5 p-4 rounded-3xl border border-white/5">
-          <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Battery Save</p>
-          <div className="flex items-center gap-2 text-emerald-400">
-            <Zap size={14} /> <span className="text-xs font-black uppercase">Optimized</span>
-          </div>
-        </div>
-      </div>
-=======
         
         <div className="flex gap-2">
           <div className={`flex items-center gap-2 px-3 py-1.5 rounded-2xl border ${isConnected ? 'border-indigo-500/30 bg-indigo-500/10 text-indigo-400' : 'border-slate-700 text-slate-500'}`}>
@@ -603,7 +496,6 @@ const RearProctoring = () => {
                       <div 
                         ref={dropdownRef}
                         className="absolute left-0 right-0 top-full mt-1 bg-gray-800 border border-gray-600 rounded max-h-40 overflow-y-auto z-[9999] shadow-xl">
-
                         {filteredLabels.length === 0 ? (
                           <div className="px-3 py-2 text-gray-500 text-xs italic">No objects found</div>
                         ) : (
@@ -712,8 +604,6 @@ const RearProctoring = () => {
           </div>
         </div>
       </div>
-
->>>>>>> Stashed changes
     </div>
   );
 };
