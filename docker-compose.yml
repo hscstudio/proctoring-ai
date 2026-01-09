@@ -1,0 +1,64 @@
+services:
+  # LiveKit Server - WebRTC media server
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: proctoring-livekit-server
+    restart: unless-stopped
+    command: --config /livekit.yaml
+    volumes:
+      - ./livekit-server/livekit.yaml:/livekit.yaml
+    ports:
+      - "7880:7880" # API & HTTP
+      - "7881:7881" # WebRTC TCP
+      - "7882:7882/udp" # WebRTC UDP (critical for video)
+    environment:
+      - LIVEKIT_CONFIG_FILE=/livekit.yaml
+    networks:
+      - proctoring-network
+
+  # Backend Server - Token generation & API
+  backend:
+    build:
+      context: ./livekit-server
+      dockerfile: Dockerfile
+    container_name: proctoring-backend
+    restart: unless-stopped
+    ports:
+      - "5050:5050"
+    environment:
+      - LIVEKIT_API_KEY=devkey
+      - LIVEKIT_API_SECRET=secret
+      - PORT=5050
+      - LIVEKIT_URL=ws://livekit:7880
+    depends_on:
+      - livekit
+    networks:
+      - proctoring-network
+
+  # React Frontend - Vite dev server
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: proctoring-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./index.html:/app/index.html
+      - ./vite.config.js:/app/vite.config.js
+      - /app/node_modules
+    environment:
+      - VITE_LIVEKIT_URL=ws://localhost:7880
+      - VITE_BACKEND_URL=http://localhost:5050
+    depends_on:
+      - backend
+      - livekit
+    networks:
+      - proctoring-network
+
+networks:
+  proctoring-network:
+    driver: bridge
